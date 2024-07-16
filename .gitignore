@@ -1,0 +1,5 @@
+.*
+!.gitignore
+*.gif
+*.png
+__*__
