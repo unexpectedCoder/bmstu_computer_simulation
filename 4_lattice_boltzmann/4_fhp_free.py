@@ -28,14 +28,14 @@ REFLECTION = {
     5: 2
 }
 
-DENSITY = 0.5
+DENSITY = 0.2
 M, N = 200, 200
-SIDE = 50
-SHIFT = -0.5
+SIDE = 40
+SHIFT = 0
 CX, CY = M//2 + int(SHIFT*SIDE), N//2 + int(SHIFT*SIDE)
 
 SCATTER_KW = dict(
-    cmap="copper", vmin=0, vmax=6, s=5, marker="h"
+    cmap="cividis", vmin=0, vmax=6, s=5, marker="h"
 )
 RG = np.random.default_rng()
 
@@ -162,8 +162,8 @@ def update(n_in: np.ndarray):
     
     return lattice
 
-lattice = create_lattice_rect()
-# lattice = create_lattice_sphere()
+# lattice = create_lattice_rect()
+lattice = create_lattice_sphere()
 
 (fig, ax), ani = run(lattice, until=500)
 ax.set(xticks=[], yticks=[], aspect="equal")

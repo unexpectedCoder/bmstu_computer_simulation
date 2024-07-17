@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from celluloid import Camera
+from tqdm import trange
 
 DIRECTION = np.array([
     [1, 0],
@@ -8,15 +9,20 @@ DIRECTION = np.array([
     [-1, 0],
     [0, -1]
 ])
+
 M, N = 201, 201
 HOLE_H, HOLE_W = 30, 10
 HOLE_X, HOLE_Y = N // 4, M // 2
 DENSITY = 0.8
+
+MATSHOW_KW = dict(
+    cmap="cividis", origin="lower", vmin=0, vmax=4
+)
 RG = np.random.default_rng()
 
 def create_lattice():
     obstacle = np.fromfunction(create_obstacles, (M, N))
-    lattice = RG.random((4, M, N)) < (1 - DENSITY)
+    lattice = np.zeros((4, M, N), dtype=bool)
     lattice[:, obstacle] = False
     lattice[:, :, :HOLE_X] = RG.random((4, M, HOLE_X)) < DENSITY
     return lattice, obstacle
@@ -29,19 +35,17 @@ def create_obstacles(y, x):
 def run(lattice: np.ndarray, obstacle: np.ndarray, until: int):
     fig, ax = plt.subplots()
     camera = Camera(fig)
-    kw = dict(
-        cmap="copper", origin="lower", vmin=0, vmax=4, interpolation="bilinear"
-    )
-    ax.matshow(lattice.sum(axis=0), **kw)
+    
+    ax.matshow(lattice.sum(axis=0), **MATSHOW_KW)
     camera.snap()
     
     s = lattice.sum()
-    for t in range(until):
+    for t in trange(until):
         lattice = update(lattice, obstacle)
         assert(s == lattice.sum())
 
         if t % 2 == 0:
-            ax.matshow(lattice.sum(axis=0), **kw)
+            ax.matshow(lattice.sum(axis=0), **MATSHOW_KW)
             camera.snap()
     
     return (fig, ax), camera.animate()
@@ -79,3 +83,4 @@ ax.set_xticks([])
 ax.set_yticks([])
 
 ani.save(f"{__file__.split('.')[0]}.gif", fps=25, dpi=150)
+# plt.show()

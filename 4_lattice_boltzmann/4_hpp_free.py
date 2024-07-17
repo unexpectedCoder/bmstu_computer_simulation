@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from celluloid import Camera
+from tqdm import trange
 
 DIRECTION = np.array([
     [1, 0],
@@ -8,12 +9,17 @@ DIRECTION = np.array([
     [-1, 0],
     [0, -1]
 ])
-DENSITY = 0.5
+
+DENSITY = 0.2
 M, N = 201, 201
-SHIFT = 1.2
+SHIFT = 0
 SIDE = 40
-CX, CY = M//2 - int(SHIFT*SIDE), N//2 - int(SHIFT*SIDE)
-RG = np.random.default_rng(seed=0)
+CX, CY = M//2 + int(SHIFT*SIDE), N//2 + int(SHIFT*SIDE)
+
+MATSHOW_KW = dict(
+    cmap="cividis", origin="lower", vmin=0, vmax=4
+)
+RG = np.random.default_rng()
 
 def create_lattice_rect():
     lattice = RG.random((4, M, N)) < DENSITY
@@ -29,19 +35,18 @@ def create_lattice_sphere():
 def run(lattice: np.ndarray, until: int):
     fig, ax = plt.subplots()
     camera = Camera(fig)
-    kw = dict(
-        cmap="copper", origin="lower", vmin=0, vmax=4, interpolation="bilinear"
-    )
-    ax.matshow(lattice.sum(axis=0), **kw)
+
+    ax.matshow(lattice.sum(axis=0), **MATSHOW_KW)
     camera.snap()
 
     s = lattice.sum()
-    for _ in range(until):
+    for t in trange(until):
         lattice = update(lattice)
         assert(s == lattice.sum())
 
-        ax.matshow(lattice.sum(axis=0), **kw)
-        camera.snap()
+        if t % 2 == 0:
+            ax.matshow(lattice.sum(axis=0), **MATSHOW_KW)
+            camera.snap()
     
     return (fig, ax), camera.animate()
 
@@ -65,8 +70,8 @@ def update(n_in: np.ndarray):
     
     return n_in
 
-ca = create_lattice_rect()
-# ca = create_lattice_sphere()
+# ca = create_lattice_rect()
+ca = create_lattice_sphere()
 
 (fig, ax), ani = run(ca, until=500)
 
@@ -74,3 +79,4 @@ ax.set_xticks([])
 ax.set_yticks([])
 
 ani.save(f"{__file__.split('.')[0]}.gif", fps=25, dpi=150)
+# plt.show()
